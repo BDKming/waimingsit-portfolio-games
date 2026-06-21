@@ -122,6 +122,24 @@ let touchTracking = false;
 
 if (activePage < 0) activePage = 0;
 
+function playInlinePreviewVideos() {
+  document.querySelectorAll("video[autoplay]").forEach((video) => {
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+    video.setAttribute("x5-playsinline", "");
+    video.setAttribute("x5-video-player-type", "h5");
+    video.setAttribute("x5-video-player-fullscreen", "false");
+
+    const playPromise = video.play();
+    if (playPromise?.catch) {
+      playPromise.catch(() => {});
+    }
+  });
+}
+
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -562,6 +580,13 @@ window.addEventListener("touchcancel", () => {
   touchTracking = false;
 });
 
+window.addEventListener("pageshow", playInlinePreviewVideos);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) playInlinePreviewVideos();
+});
+document.addEventListener("WeixinJSBridgeReady", playInlinePreviewVideos, false);
+window.addEventListener("touchstart", playInlinePreviewVideos, { once: true, passive: true });
+
 window.addEventListener("keydown", (event) => {
   if (lightbox?.classList.contains("active")) {
     if (event.key === "Escape") closeGallery();
@@ -584,4 +609,5 @@ history.replaceState(null, "", "#welcome");
 
 setupScrollFloatText();
 setupPressureText();
+playInlinePreviewVideos();
 
