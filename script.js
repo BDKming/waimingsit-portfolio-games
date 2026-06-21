@@ -288,18 +288,35 @@ function setupScrollFloatText() {
 
   headings.forEach((heading) => {
     if (heading.dataset.floatReady) return;
+    const lines = Array.from(heading.querySelectorAll(".closing-line"));
     const text = heading.textContent;
     heading.textContent = "";
     heading.classList.add("scroll-float");
     heading.dataset.floatReady = "true";
 
-    Array.from(text).forEach((char, index) => {
-      const span = document.createElement("span");
-      span.className = "char";
-      span.style.setProperty("--char-index", index);
-      span.textContent = char === " " ? "\u00a0" : char;
-      heading.appendChild(span);
-    });
+    let charIndex = 0;
+    const appendChars = (parent, lineText) => {
+      Array.from(lineText.trim()).forEach((char) => {
+        const span = document.createElement("span");
+        span.className = "char";
+        span.style.setProperty("--char-index", charIndex);
+        span.textContent = char === " " ? "\u00a0" : char;
+        parent.appendChild(span);
+        charIndex += 1;
+      });
+    };
+
+    if (lines.length) {
+      lines.forEach((line) => {
+        const lineElement = document.createElement("span");
+        lineElement.className = "closing-line";
+        appendChars(lineElement, line.textContent);
+        heading.appendChild(lineElement);
+      });
+      return;
+    }
+
+    appendChars(heading, text);
   });
 }
 
@@ -563,12 +580,7 @@ window.addEventListener("keydown", (event) => {
   stepPage(direction);
 });
 
-let initialPage = window.location.hash.replace("#", "");
-if (initialPage && pages.some((page) => page.dataset.page === initialPage)) {
-  showPage(initialPage, false);
-} else if (!initialPage) {
-  history.replaceState(null, "", "#welcome");
-}
+history.replaceState(null, "", "#welcome");
 
 setupScrollFloatText();
 setupPressureText();
